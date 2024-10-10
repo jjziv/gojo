@@ -1,18 +1,14 @@
 package main
 
 import (
-	"log"
-	"net/http"
-
 	"github.com/go-chi/chi/v5"
-)
+	"log"
 
-const (
-	applicationPort = "1337"
+	"gojo/router"
 )
 
 func main() {
-	apiRouter, err := NewApiRouter(&ApiRouterConfig{
+	apiRouter, err := router.NewApiRouter(&router.ApiRouterConfig{
 		Handler: chi.NewRouter(),
 	})
 	if err != nil {
@@ -20,9 +16,4 @@ func main() {
 	}
 
 	apiRouter.Init()
-
-	err = http.ListenAndServe(":"+applicationPort, apiRouter.handler)
-	if err != nil {
-		log.Fatal(err)
-	}
 }

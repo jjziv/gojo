@@ -1,9 +1,11 @@
-package main
+package router
 
 import (
 	"compress/flate"
 	"fmt"
 	"log"
+	"net/http"
+	"os"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -36,11 +38,13 @@ func NewApiRouter(cfg *ApiRouterConfig) (*ApiRouter, error) {
 }
 
 func (r *ApiRouter) Init() {
+	port := os.Getenv("PORT")
+
 	r.handler.Use(middleware.Logger)
 	r.handler.Use(middleware.Recoverer)
 	r.handler.Use(middleware.Compress(flate.DefaultCompression))
 	r.handler.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{fmt.Sprintf("http://localhost:%s", applicationPort)},
+		AllowedOrigins:   []string{fmt.Sprintf("http://localhost:%s", port)},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Content-Type", "Authorization", "Accept"},
 		AllowCredentials: true,
@@ -64,4 +68,9 @@ func (r *ApiRouter) Init() {
 	r.handler.Get("/characters/get/{ids}", rickAndMortyHandler.GetCharacters)
 	r.handler.Get("/characters/search", rickAndMortyHandler.SearchCharacters)
 	r.handler.Get("/characters/list", rickAndMortyHandler.ListCharacters)
+
+	err = http.ListenAndServe(":"+port, r.handler)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
